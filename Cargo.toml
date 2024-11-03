@@ -1,0 +1,3 @@
+[workspace]
+members = ["pxc-editor", "lib-pxc"]
+resolver = "2"
