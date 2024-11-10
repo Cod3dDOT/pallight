@@ -1,6 +1,10 @@
 mod app;
 mod chunk;
-mod image;
+mod image_source;
+
+mod canvas;
+mod palette;
+mod viewport;
 
 use app::PixelEditor;
 
