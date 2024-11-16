@@ -1,7 +1,7 @@
 pub const MAGIC_HEADER: [u8; 4] = *b"PXC1";
 
 #[derive(Debug)]
-pub struct PXCImage {
+pub struct Image {
     pub magic: [u8; 4],
     pub width: u16,
     pub height: u16,
@@ -10,7 +10,7 @@ pub struct PXCImage {
     pub rgba_data: Vec<u8>,
 }
 
-impl PXCImage {
+impl Image {
     pub const MAGIC_SIZE: usize = 4;
     pub const WIDTH_HEIGHT_SIZE: usize = std::mem::size_of::<u16>();
     pub const PALETTE_SIZE_SIZE: usize = std::mem::size_of::<u8>();

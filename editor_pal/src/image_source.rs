@@ -1,11 +1,11 @@
 use eframe::egui::Color32;
 use image::{DynamicImage, GenericImageView};
-use lib_pxc::PXCImage;
+use lib_pxc::Image;
 
 use crate::chunk::{Chunk, CHUNK_SIZE};
 
 // First, let's define a trait for image sources
-pub trait ImageSource {
+pub trait ImageSource: Send + Sync {
     /// Get the dimensions of the image (width, height)
     fn dimensions(&self) -> (u32, u32);
 
@@ -57,7 +57,7 @@ impl ImageSource for DynamicImage {
     }
 }
 
-impl ImageSource for PXCImage {
+impl ImageSource for Image {
     fn dimensions(&self) -> (u32, u32) {
         (self.width.into(), self.height.into())
     }

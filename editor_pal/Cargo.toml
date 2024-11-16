@@ -10,4 +10,4 @@ rfd = "0.15.0"                    # File picker
 image = "0.25"
 eframe = "0.29.1"                 # GUI framework for egui applications
 egui_extras = "0.29.1"            # For the color picker and other extra widgets
-lib-pxc = { path = "../lib-pxc" } # Link to the compression library
+lib-pxc = { path = "../lib_pal" } # Link to the compression library

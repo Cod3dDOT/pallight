@@ -1,5 +1,3 @@
-use std::ptr::null;
-
 use eframe::egui::Color32;
 use thiserror::Error;
 

@@ -1,4 +1,4 @@
-use super::format::{PXCImage, MAGIC_HEADER};
+use super::format::{Image, MAGIC_HEADER};
 use crate::compression::{decompress, CompressionResult, DecompressionError};
 use log::{debug, error, info};
 use thiserror::Error;
@@ -18,36 +18,36 @@ pub enum DecodeError {
     DecompressionFailed(#[from] DecompressionError),
 }
 
-pub fn decode(encoded_data: &[u8]) -> Result<PXCImage, DecodeError> {
+pub fn decode(encoded_data: &[u8]) -> Result<Image, DecodeError> {
     let mut cursor = 0;
 
     // Check the header and magic number
-    if encoded_data.len() < PXCImage::MAGIC_SIZE || !encoded_data.starts_with(&MAGIC_HEADER) {
+    if encoded_data.len() < Image::MAGIC_SIZE || !encoded_data.starts_with(&MAGIC_HEADER) {
         error!("Invalid format or missing magic number in header");
         return Err(DecodeError::InvalidHeader);
     }
     debug!("Magic number validated successfully");
-    cursor += PXCImage::MAGIC_SIZE;
+    cursor += Image::MAGIC_SIZE;
 
     // Read width and height
     let width = u16::from_be_bytes(
-        encoded_data[cursor..cursor + PXCImage::WIDTH_HEIGHT_SIZE]
+        encoded_data[cursor..cursor + Image::WIDTH_HEIGHT_SIZE]
             .try_into()
             .map_err(|_| {
                 error!("Failed to parse width");
                 DecodeError::DimensionParsingFailed
             })?,
     );
-    cursor += PXCImage::WIDTH_HEIGHT_SIZE;
+    cursor += Image::WIDTH_HEIGHT_SIZE;
     let height = u16::from_be_bytes(
-        encoded_data[cursor..cursor + PXCImage::WIDTH_HEIGHT_SIZE]
+        encoded_data[cursor..cursor + Image::WIDTH_HEIGHT_SIZE]
             .try_into()
             .map_err(|_| {
                 error!("Failed to parse height");
                 DecodeError::DimensionParsingFailed
             })?,
     );
-    cursor += PXCImage::WIDTH_HEIGHT_SIZE;
+    cursor += Image::WIDTH_HEIGHT_SIZE;
     debug!("Image dimensions read: width={} height={}", width, height);
 
     // Read palette size
@@ -56,7 +56,7 @@ pub fn decode(encoded_data: &[u8]) -> Result<PXCImage, DecodeError> {
         return Err(DecodeError::InsufficientDataForPaletteSize);
     }
     let palette_size = encoded_data[cursor] as usize;
-    cursor += PXCImage::PALETTE_SIZE_SIZE;
+    cursor += Image::PALETTE_SIZE_SIZE;
     debug!("Palette size: {}", palette_size);
 
     // Read palette
@@ -89,7 +89,7 @@ pub fn decode(encoded_data: &[u8]) -> Result<PXCImage, DecodeError> {
     info!("Decompression successful");
 
     // Return the decoded image
-    Ok(PXCImage::new(
+    Ok(Image::new(
         width,
         height,
         palette_size as u8,

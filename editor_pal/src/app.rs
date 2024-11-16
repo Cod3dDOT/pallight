@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{Read, Write};
+use std::io::Read;
 
 use eframe::egui::{self, Layout};
 use eframe::Frame;
@@ -7,11 +7,10 @@ use egui::{Color32, Pos2, Rect, Vec2};
 
 use crate::canvas::{self, Canvas, CELL_SIZE};
 use crate::chunk::CHUNK_SIZE;
+use crate::filemanager;
 use crate::image_source::ImageSource;
 use crate::palette::Palette;
 use crate::viewport::{update_canvas_viewport, ViewportInfo, ViewportOptions};
-
-use lib_pxc::{decode, encode};
 
 pub fn grid_to_screen(viewport_info: &ViewportInfo, grid_pos: (u32, u32)) -> (f32, f32) {
     let cell_size = viewport_info.zoom() * CELL_SIZE as f32;
@@ -190,75 +189,14 @@ impl PixelEditor {
             ui.horizontal(|ui| {
                 // Load image button
                 if ui.button("📂 Load Image").clicked() {
-                    if let Some(path) = rfd::FileDialog::new()
-                        .add_filter("Image", &["png", "jpg", "jpeg", "bmp", "webp"])
-                        .add_filter("PXC", &["pxc"])
-                        .pick_file()
-                    {
-                        if let Some(ext) = path.extension() {
-                            if ext == "pxc" {
-                                if let Ok(mut file) = File::open(&path) {
-                                    let mut buffer = Vec::new();
-
-                                    // Read the file into the buffer
-                                    if file.read_to_end(&mut buffer).is_ok() {
-                                        if let Ok(custom_image) = decode(&buffer) {
-                                            self.handle_image_load(&custom_image);
-                                        } else {
-                                            eprintln!("Failed to decode custom image format");
-                                        }
-                                    } else {
-                                        eprintln!("Failed to read the file into buffer");
-                                    }
-                                } else {
-                                    eprintln!("Failed to open file: {:?}", path);
-                                }
-                            }
-
-                            if ext == "png"
-                                || ext == "jpg"
-                                || ext == "jpeg"
-                                || ext == "bmp"
-                                || ext == "webp"
-                            {
-                                if let Ok(img) = image::open(&path) {
-                                    self.handle_image_load(&img);
-                                }
-                            }
-                        }
-                    }
+                    let image = filemanager::open_image()?;
+                    self.handle_image_load(&*image?);
                 }
 
                 if ui.button("Save Image").clicked() {
-                    if let Some(path) = rfd::FileDialog::new().save_file() {
-                        if let Some(path_str) = path.to_str() {
-                            match File::create(path_str) {
-                                Ok(mut file) => {
-                                    let (width, height) = self.canvas.dimensions();
-
-                                    let rgba_data = self.canvas.get_data();
-
-                                    let data = encode(
-                                        width.try_into().unwrap(),
-                                        height.try_into().unwrap(),
-                                        &rgba_data as &[u8],
-                                    )
-                                    .unwrap();
-
-                                    if let Err(e) = file.write_all(&data) {
-                                        eprintln!("Failed to write data to file: {}", e);
-                                    } else {
-                                        println!("File saved successfully to {}", path_str);
-                                    }
-                                }
-                                Err(e) => eprintln!("Failed to create file: {}", e),
-                            }
-                        } else {
-                            eprintln!("Invalid file path.");
-                        }
-                    } else {
-                        println!("Save operation canceled.");
-                    }
+                    let (width, height) = self.canvas.dimensions();
+                    let rgba_data = self.canvas.get_data();
+                    filemanager::save_image((width, height), rgba_data);
                 }
 
                 // ui.separator();

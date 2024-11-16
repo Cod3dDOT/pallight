@@ -1,11 +1,12 @@
 pub mod compression;
+pub mod constants;
 pub mod image;
 
 use log::*;
 use std::fs::File;
 use std::io::Write;
 
-pub use crate::image::format::PXCImage;
+pub use crate::image::format::Image;
 pub use crate::image::{decode, encode};
 
 pub fn init_logging() {

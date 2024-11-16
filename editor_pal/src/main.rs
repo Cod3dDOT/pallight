@@ -3,6 +3,7 @@ mod chunk;
 mod image_source;
 
 mod canvas;
+mod filemanager;
 mod palette;
 mod viewport;
 
